@@ -1,6 +1,6 @@
 # IS intern assign
 
-Production-style implementation of an AI/MLOps engineering assignment covering only deliverables **1–4**: project structure, source code, GitHub Actions, and README.
+
 
 ## Scope
 
@@ -9,7 +9,6 @@ Production-style implementation of an AI/MLOps engineering assignment covering o
 - **Part 3:** CI/CD with lint, type checks, tests, build, image scanning, OIDC deployment to staging, and production canary promotion.
 - **Part 4:** This README.
 
-Interview Q&A, the video script, and standalone benchmark deliverables are intentionally not included.
 
 ## Results from the seeded reference benchmark
 
