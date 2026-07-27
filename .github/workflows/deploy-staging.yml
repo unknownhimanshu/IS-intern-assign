@@ -1,0 +1,29 @@
+name: Deploy staging
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-staging
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.STAGING_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+      - uses: azure/setup-helm@v4
+      - run: aws eks update-kubeconfig --name agentctl-staging --region "${{ vars.AWS_REGION }}"
+      - run: helm upgrade --install agentctl deploy/helm/agentctl --namespace agentctl --create-namespace --set image.tag=${{ github.sha }} --atomic --wait --timeout 8m
+      - run: curl --fail https://staging.agentctl.example/healthz

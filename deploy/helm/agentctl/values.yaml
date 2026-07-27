@@ -1,0 +1,15 @@
+image:
+  repository: ghcr.io/unknownhimanshu/IS-intern-assign
+  tag: latest
+  pullPolicy: IfNotPresent
+replicaCount: 2
+canary:
+  enabled: false
+  weight: 0
+resources:
+  requests:
+    cpu: 250m
+    memory: 512Mi
+  limits:
+    cpu: 1
+    memory: 1Gi

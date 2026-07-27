@@ -1,0 +1,31 @@
+name: Deploy production canary
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        required: true
+        description: Immutable image tag or digest already tested in staging
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  canary:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.PRODUCTION_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+      - uses: azure/setup-helm@v4
+      - run: aws eks update-kubeconfig --name agentctl-production --region "${{ vars.AWS_REGION }}"
+      - run: helm upgrade --install agentctl deploy/helm/agentctl --namespace agentctl --set image.tag=${{ inputs.image_tag }} --set canary.enabled=true --set canary.weight=5 --atomic --wait --timeout 10m
+      - run: python deploy/canary_analysis.py --duration 600 --max-error-rate 0.01 --max-p95-latency 12 --min-groundedness 0.88
+      - run: helm upgrade agentctl deploy/helm/agentctl --namespace agentctl --reuse-values --set canary.weight=100 --wait
+        if: success()
+      - run: helm rollback agentctl --namespace agentctl --wait --timeout 5m
+        if: failure()
