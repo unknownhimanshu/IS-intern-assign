@@ -24,13 +24,23 @@ class BudgetPolicy:
     target_prompt_tokens: int = 8_000
     max_context: int = 128_000
     reserved_output: int = 1_024
-    weights: dict[str, float] = field(default_factory=lambda: {
-        "system": .10, "tools": .06, "summary": .10, "recent_turns": .14, "evidence": .60,
-    })
+    weights: dict[str, float] = field(
+        default_factory=lambda: {
+            "system": 0.10,
+            "tools": 0.06,
+            "summary": 0.10,
+            "recent_turns": 0.14,
+            "evidence": 0.60,
+        }
+    )
 
     def allocate(self) -> Allocation:
-        budget = min(self.target_prompt_tokens, self.max_context - self.reserved_output)
-        return Allocation(*(int(budget * self.weights[key]) for key in self.weights), self.reserved_output)
+        budget = min(
+            self.target_prompt_tokens,
+            self.max_context - self.reserved_output,
+        )
+        values = [int(budget * self.weights[key]) for key in self.weights]
+        return Allocation(*values, self.reserved_output)
 
 
 def enforce(counter: TokenCounter, text: str, limit: int) -> str:

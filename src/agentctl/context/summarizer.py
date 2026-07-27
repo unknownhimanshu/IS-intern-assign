@@ -13,9 +13,17 @@ class ConversationFacts(BaseModel):
 
     def render(self) -> str:
         sections = []
-        for name, values in (("CONSTRAINTS", self.constraints), ("DECISIONS", self.decisions), ("ENTITIES", self.entities), ("OPEN", self.open_questions)):
+        labels = (
+            ("CONSTRAINTS", self.constraints),
+            ("DECISIONS", self.decisions),
+            ("ENTITIES", self.entities),
+            ("OPEN", self.open_questions),
+        )
+        for name, values in labels:
             if values:
-                sections.append(name + ":\n" + "\n".join(f"- {value}" for value in values))
+                sections.append(
+                    name + ":\n" + "\n".join(f"- {value}" for value in values)
+                )
         return "\n\n".join(sections)
 
 
@@ -33,7 +41,8 @@ class RollingSummary:
     def build(self, history: list[Turn]) -> tuple[ConversationFacts, list[Turn]]:
         if len(history) <= self.keep_verbatim:
             return self.facts, history
-        older, tail = history[:-self.keep_verbatim], history[-self.keep_verbatim:]
+        older = history[:-self.keep_verbatim]
+        tail = history[-self.keep_verbatim:]
         self.facts = self._merge(older)
         return self.facts, tail
 
@@ -50,4 +59,9 @@ class RollingSummary:
                 decisions.append(text.split(":", 1)[1].strip())
             elif text.lower().startswith("question:"):
                 open_questions.append(text.split(":", 1)[1].strip())
-        return ConversationFacts(constraints=list(dict.fromkeys(constraints))[-12:], decisions=list(dict.fromkeys(decisions))[-12:], entities=list(dict.fromkeys(entities))[-20:], open_questions=list(dict.fromkeys(open_questions))[-8:])
+        return ConversationFacts(
+            constraints=list(dict.fromkeys(constraints))[-12:],
+            decisions=list(dict.fromkeys(decisions))[-12:],
+            entities=list(dict.fromkeys(entities))[-20:],
+            open_questions=list(dict.fromkeys(open_questions))[-8:],
+        )

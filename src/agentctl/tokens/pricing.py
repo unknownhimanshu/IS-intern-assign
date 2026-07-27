@@ -25,4 +25,7 @@ class Usage:
     def cost_usd(self) -> float:
         price = PRICES[self.model]
         fresh = max(0, self.input_tokens - self.cached_input_tokens)
-        return (fresh * price.input_per_mtok + self.cached_input_tokens * price.cached_input_per_mtok + self.output_tokens * price.output_per_mtok) / 1_000_000
+        input_cost = fresh * price.input_per_mtok
+        cached_cost = self.cached_input_tokens * price.cached_input_per_mtok
+        output_cost = self.output_tokens * price.output_per_mtok
+        return (input_cost + cached_cost + output_cost) / 1_000_000
